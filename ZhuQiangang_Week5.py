@@ -3,11 +3,8 @@
 # matching those specified in the question. Your functions will be test for a 
 # range of different input values, against a model solution, to see if they 
 # produce the same answers.
-from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
-import numpy.random as npr
-import os
 
 # What things have we learnt this week? Series and DataFrames: using indices, 
 # indexing and slicing; boolean indexing, simple functions on series and data frames
@@ -15,7 +12,7 @@ import os
 
 # You may find it useful to test your functions on the Diamonds dataset from Week 1.
 # Locate it on your computer and copy it into your current working directory
-diamonds = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data/Diamonds.csv'))
+diamonds = pd.read_csv('Diamonds.csv')
 
 
 # You don't need to include the output of your tests in your PDF.
