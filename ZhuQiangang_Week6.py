@@ -1,27 +1,30 @@
 # Assessed exercises 6 
 
 # Import packages
-from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
-import numpy.random as npr
 
 # This week we will use the san-francisco-2018 dataset to test the code. It 
 # contains salary information for over 40,000 workers in San Francisco. I have 
 # taken a subset of 500 of the entries from this dataset, and removed some of t
 # the entries to create NaN entries. Download the dataset, load it in and have
 # a look at the first few entries to see what it looks like.
-data = pd.read_csv('san-francisco-2018.csv',index_col='Name')
+data = pd.read_csv('san-francisco-2018.csv', index_col='Name')
+
 
 # Q1 Write a function that will calculate the column means for a given DataFrame
 # df and returns the DataFrame with the column means removed (subtracted)
 def exercise1(df):
-    
+    return df.sub(df.mean(axis=0))
+
+
 # Suggested test
 # Take a small subset of the data, and drop the categorical data
-dataQ1 = data.drop(['Job Title','Status'],axis=1).iloc[80:100]
+dataQ1 = data.drop(['Job Title', 'Status'], axis=1).iloc[80:100]
 exercise1(dataQ1)
-# This should return a DataFrame with 20 rows and 4 columns, with the difference 
+
+
+# This should return a DataFrame with 20 rows and 4 columns, with the difference
 # from the mean for each measurement, for each person
 
 # Q2 Write a function that computes summary statistics for a DataFrame df. The 
@@ -33,13 +36,23 @@ exercise1(dataQ1)
 # those in the original DataFrame (in the same order). You can assume that df
 # does not contain categorical data
 def exercise2(df):
-    
+    df_mean = df.mean(axis=0)
+    df_std = df.std(axis=0)
+    df_min = df.min(axis=0)
+    df_max = df.max(axis=0)
+    df_minloc = df.idxmin(axis=0)
+    df_maxloc = df.idxmax(axis=0)
+    return pd.DataFrame([df_mean, df_std, df_min, df_max, df_minloc, df_maxloc], columns=df.columns)
+
+
 # Suggested test
 # Remove the categorical data. Once you've completed Q4 you should have a 
 # generalisable way to remove categorical data
-dataQ2 = data.drop(['Job Title','Status'],axis=1)
+dataQ2 = data.drop(['Job Title', 'Status'], axis=1)
 exercise2(dataQ2)
-# This should give you back a DataFrame with 6 row and 4 columns, containing 
+
+
+# This should give you back a DataFrame with 6 row and 4 columns, containing
 # the mean, std, min, max, minloc, maxloc (in that order) for Base Pay, Overtime
 # Pay, Other Pay and Benefits. minloc and maxloc should contain the name of the
 # person with the min/max Base Pay, Overtime Pay, etc.
@@ -52,16 +65,32 @@ exercise2(dataQ2)
 # the given column. Again, you can assume that df does not contain categorical 
 # data
 def exercise3(df):
-    
+    df_copy = df.copy()
+    st = df_copy.idxmax(axis=0)
+    for i, val in enumerate(st):
+        df_copy.loc[val, st.index[i]] = float('-inf')
+    nd = df_copy.idxmax(axis=0)
+    for i, val in enumerate(nd):
+        df_copy.loc[val, st.index[i]] = float('-inf')
+    rd = df_copy.idxmax(axis=0)
+    for i, val in enumerate(rd):
+        df_copy.loc[val, st.index[i]] = float('-inf')
+    df_new = pd.DataFrame([st, nd, rd]).T
+    df_new.columns = ['1st', '2nd', '3rd']
+    return df_new
+
+
 # Suggested test
 # We can use the same data from Q2
-exercise3(dataQ2)   
+exercise3(dataQ2)
+
+
 # This should return a DataFrame with 4 rows and 3 columns, where ther rows are
 # Base Pay, Overtime Pay, Other Pay and Benefits, and the columns 1st, 2nd and 
 # 3rd. The entries should be the names of the employees with the highest, second
 # highest and third highest Base Pay, Overtime Pay, etc. Look at the DataFrame
 # dataQ2 to ensure the function is returning the correct information.
-    
+
 # Q4 In this question you need to write a function to replace all of the NaNs 
 # in a DataFrame df with the mean of the column for numeric data and the mode
 # of the column for categorical data. If a column of categorical data has more 
@@ -73,7 +102,16 @@ exercise3(dataQ2)
 # and then use drop to make the replacements for numeric and categorical data 
 # separately. 
 def exercise4(df):
-    
+    df_copy = df.copy()
+    for i in range(df_copy.shape[1]):
+        if np.issubdtype(df_copy.iloc[:, i].dtype, np.number):
+            df_copy.iloc[:, i].fillna(df_copy.iloc[:, i].mean(), inplace=True)
+        else:
+            df_copy.iloc[:, i].fillna(df_copy.iloc[df_copy.index.get_loc(df.iloc[:, i].first_valid_index()), i],
+                                      inplace=True)
+    return df_copy
+
+
 # Suggested test
 # Take a subset of the data, look at the data and see that there are NaN entries
 dataQ4 = data.iloc[150:180]
